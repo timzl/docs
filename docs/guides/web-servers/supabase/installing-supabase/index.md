@@ -97,9 +97,10 @@ Supabase operates its Docker Compose setup out of its Git repository. Thus, you 
 
         cd supabase/docker
 
-3. Make a copy of the included configuration file, `.env.example`. For now, you can leave the contents of the file as is, but this file is where most of your instance's configuration resides. Later, you can get some ideas for how to customize it for your security needs:
+3. Make a copy of the included configuration file, `.env.example` and pull the latest images. For now, you can leave the contents of the file as is, but this file is where most of your instance's configuration resides. Later, you can get some ideas for how to customize it for your security needs:
 
         cp .env.example .env
+        docker compose pull
 
 ### Run Supabase
 
@@ -107,13 +108,18 @@ You are now ready to start running your Supabase instance. You can start it up b
 
     sudo docker compose up -d
 
-If you're on a local machine, simply, navigate to `localhost:3000` in your web browser to see the Supabase interface:
+If you're on a local machine, simply, navigate to `localhost:8000` in your web browser to see the Supabase interface:
 
 ![Supabase dashboard](supabase-dashboard.png)
 
-However, if you are wanting to access Supabase remotely, you need to open the port in your system's firewall. You can learn about how to do so through our guide on [securing your server](/docs/products/compute/compute-instances/guides/set-up-and-secure/#configure-a-firewall).
+However, if you want to access Supabase remotely, you need to open the port in your system's firewall. You can learn about how to do so through our guide on [securing your server](/docs/products/compute/compute-instances/guides/set-up-and-secure/#configure-a-firewall). Once your firewall has been configured, you can access the Supabase interface remotely by navigating to port `8000` on your server's remote IP address. For instance, if your server's remote IP address is `192.0.2.0`, navigate in a web browser to `http://192.0.2.0:8000`. You can login with the default dashboard credentials:
 
-You also need to modify the URL values in your Supabase instance's configuration to match your server's remote address. Open Supabase's `.env` file, and change the `SITE_URL`, `API_EXTERNAL_URL`, and `PUBLIC_REST_URL` variables, replacing `localhost` with your server's remote address.
+```command {class="dark"}
+supabase
+this_password_is_insecure_and_should_be_updated
+```
+
+You also need to modify the URL values in your Supabase instance's configuration to match your server's remote address. Open Supabase's `.env` file, and change the `SITE_URL`, `API_EXTERNAL_URL`, and `SUPABASE_PUBLIC_URL` variables, replacing `localhost` with your server's remote address.
 
 This example uses a remote IP address of `192.0.2.0` for the server and assumes Supabase's default ports:
 
@@ -130,8 +136,11 @@ API_EXTERNAL_URL=http://192.0.2.0:8000
 # Studio - Configuration for the Dashboard
 ############
 
+# [...]
+
 STUDIO_PORT=3000
-PUBLIC_REST_URL=http://192.0.2.0:8000/rest/v1/ # replace if you intend to use Studio outside of localhost
+# replace if you intend to use Studio outside of localhost
+SUPABASE_PUBLIC_URL=http://192.0.2.0:8000
 {{< /file >}}
 
 Similar changes need to be made again should you alter the server address or the instance's ports. That is the case with the steps for implementing a reverse proxy server as shown further on in this tutorial.
@@ -140,8 +149,6 @@ Once you have made the updates, restart your instance:
 
     sudo docker compose down
     sudo docker compose up -d
-
-After making the above preparations, you can access the Supabase interface remotely by navigating to port `3000` on your server's remote IP address. For instance, if your server's remote IP address is `192.0.2.0`, navigate in a web browser to `http://192.0.2.0:3000`.
 
 {{< note respectIndent=false >}}
 You may need to open the port in your system's firewall. You can learn about how to do so through our guide on [securing your server](/docs/products/compute/compute-instances/guides/set-up-and-secure/#configure-a-firewall).
@@ -166,7 +173,7 @@ Setting keys and secrets for your Supabase instance helps keep it secure. Doing 
 
 1. Generate two passwords without special characters and consisting of at least 32 characters, referred to henceforth as `examplePassword1` and `examplePassword2`. You can generate random passwords for this purpose using Bitwarden's [password generator](https://bitwarden.com/password-generator/).
 
-2. Navigate to Supabase's [API-key generator](https://supabase.com/docs/guides/hosting/overview#api-keys). This tool takes `examplePassword2` and creates two specific JavaScript Web Tokens (JWTs) from it. Input `examplePassword2`into the **JWT Secret** field, and make sure `ANON_KEY` is selected as the **Preconfigured Payload**. Then, click the **Generate JWT** button to generate `exampleJWT1` and save it along with your passwords.
+2. Navigate to Supabase's [API-key generator](https://supabase.com/docs/guides/self-hosting/docker#generate-api-keys). This tool takes `examplePassword1` and creates two specific JavaScript Web Tokens (JWTs) from it. Input `examplePassword1`into the **JWT Secret** field, and make sure `ANON_KEY` is selected as the **Preconfigured Payload**. Then, click the **Generate JWT** button to generate `exampleJWT1` and save it along with your passwords.
 
     Using a random example password like from above, the result could look like:
 
@@ -182,7 +189,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3M
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZSIsCiAgICAiaWF0IjogMTY2MTc0OTIwMCwKICAgICJleHAiOiAxODE5NTE1NjAwCn0.93ec0gljiKlnrPUGEBqGOukXoNymz6EBgtHK33zkYpI
 {{< /output >}}
 
-4. Open the `.env` file in your `supabase/docker` directory. Replace the values for `POSTGRES_PASSWORD`, `JWT_SECRET`, `ANON_KEY`, and `SERVICE_ROLE_KEY` with your `examplePassword1`, `examplePassword2`, `exampleJWT1`, and `exampleJWT2`, respectively:
+4. Open the `.env` file in your `supabase/docker` directory. Replace the values for `POSTGRES_PASSWORD`, `JWT_SECRET`, `ANON_KEY`, and `SERVICE_ROLE_KEY` with your `examplePassword1`, `examplePassword2`, `exampleJWT1`, and `exampleJWT2`, respectively. You can also reconfigure your Supabase `DASHBOARD_USERNAME` and `DASHBOARD_PASSWORD` here:
 
     {{< file ".env" >}}
 # [...]
@@ -190,19 +197,21 @@ POSTGRES_PASSWORD=examplePassword1
 JWT_SECRET=examplePassword2
 ANON_KEY=exampleJWT1
 SERVICE_ROLE_KEY=exampleJWT2
+DASHBOARD_USERNAME=supabase
+DASHBOARD_PASSWORD=this_password_is_insecure_and_should_be_updated
 # [...]
 {{< /file >}}
 
-5. Open the Kong configuration file, which is located at `volumes/api/kong.yml` in the `supabase/docker` directory. Find the `consumers` section of the file, and replace the `key` values under the `anon` and `service_role` usernames with your `exampleJWT1` and `exampleJWT2`, respectively:
+5. Open the Kong configuration file, which is located at `volumes/api/kong.yml` in the `supabase/docker` directory. Find the `Dashboard credentials` section of the file. Here you can add additional login credentials:
 
     {{< file "volumes/api/kong.yml" yml >}}
-consumers:
-- username: anon
-  keyauth_credentials:
-  - key: exampleJWT1
-- username: service_role
-  keyauth_credentials:
-  - key: exampleJWT2
+basicauth_credentials:
+- consumer: DASHBOARD
+  username: username1
+  password: example-dashboard-password-1
+- consumer: DASHBOARD
+  username: username2
+  password: example-dashboard-password-2
 {{< /file >}}
 
 6. Restart your Supabase instance for these changes to take effect:
@@ -229,7 +238,7 @@ map $http_upgrade $connection_upgrade {
 }
 
 upstream supabase {
-    server localhost:3000;
+    server localhost:8000;
 }
 
 upstream kong {
