@@ -19,3 +19,8 @@ This guide describes the recommended strategy for migrating your services from a
 ## Assess Your Current Workloads
 
 Before migrating your services to Linode, it will be helpful to run discovery on your current cloud workloads to understand what sort of resources you will need to deploy on the Linode platform. The products offered by AWS are wide ranging and while Linode has many comparables, they are not one-to-one. The following table should assist in your assessment process:
+
+### AWS/Linode Compute Product Comparison
+| AWS  | Column Header 2 | | 
+| -- | -- |
+| **Example** | This is an example of text in the second column. |
